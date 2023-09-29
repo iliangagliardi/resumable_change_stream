@@ -1,9 +1,9 @@
 const { MongoClient, ReadPreference, Timestamp } = require('mongodb');
 
-const MONGO_URL = 'mongodb+srv://...';
-const database = "mydb";
-const collection = "foo";
-const changeStreamTokenCollection = "foo.changeStreamToken";
+const MONGO_URL = `mongodb+srv://....mongodb.net`;
+const database = `mydb`;
+const collection = `foo`;
+const changeStreamTokenCollection = `${collection}.changeStreamToken`;
 // manually or programmatically create the change stream capped collection for storing the last read token
 // db.createCollection('foo.changeStreamToken',{capped:true, size:16000, max:1})
 
@@ -16,6 +16,7 @@ const changeStreamTokenCollection = "foo.changeStreamToken";
     });
 
     const db = await mongoClient.db(database);
+    setup(changeStreamTokenCollection, db);
 
 
     // I also added this to show how you can resume at a specific point in time
@@ -63,7 +64,7 @@ const changeStreamTokenCollection = "foo.changeStreamToken";
     ],
         options
     );
-
+    console.log("Change Stream started, awaiting for events...")
     changeStream.on('change', (event) => {
         // process the event however you want
         console.log(event);
@@ -78,4 +79,17 @@ const changeStreamTokenCollection = "foo.changeStreamToken";
 
 async function insertToken(token, db) {
     await db.collection(changeStreamTokenCollection).insertOne({ '_id': token })
+}
+
+
+async function setup(cappedTokenColl, db) {
+    const collections = await db.listCollections().toArray();
+    const collectionExists = collections.some((col) => col.name === cappedTokenColl);
+
+    if (!collectionExists) {
+        await db.createCollection(cappedTokenColl, {capped:true, size:16000, max:1});
+        console.log(`Collection '${cappedTokenColl}' created.`);
+    } else {
+        console.log(`Collection '${cappedTokenColl}' already exists.`);
+    }
 }

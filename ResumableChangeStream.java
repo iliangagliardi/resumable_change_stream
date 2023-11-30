@@ -37,7 +37,7 @@ public class ResumableChangeStream {
         mongoClient = MongoClients.create(MongoClientSettings.
                 builder()
                 .applicationName("ResumableChangeStream")
-                        .applyConnectionString(new ConnectionString("mongodb+srv://ilian:Password.@m0.takskf9.mongodb.net/?"))
+                        .applyConnectionString(new ConnectionString("mongodb+srv://..."))
                 .build()); 
         database = mongoClient.getDatabase(DATABASE_NAME);
         collection = database.getCollection(COLLECTION_NAME);
